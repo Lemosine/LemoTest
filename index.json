@@ -3,7 +3,6 @@
     "id": "lemo-nyaa-dub",
     "name": "Lemo Nyaa English Dubs",
     "version": "1.0.0",
-    "description": "Custom optimized scraper targeting English dubbed anime and dual-audio releases.",
     "script": "https://raw.githubusercontent.com/Lemosine/LemoTest/main/dub-scraper.js"
   }
 ]

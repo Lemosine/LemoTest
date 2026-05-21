@@ -10,7 +10,6 @@
 
 export default class extends Extension {
     async search(query) {
-        // Automatically injects search filters to focus on English Dubs and Dual-Audio
         const cleanQuery = encodeURIComponent(`${query} "dub"`);
         const searchUrl = `https://nyaa.si/?f=0&c=1_2&q=${cleanQuery}`;
 
