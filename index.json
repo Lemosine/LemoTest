@@ -1,8 +1,11 @@
 [
   {
     "author": "Lemosine",
+    "icon": "https://nyaa.si/static/favicon.png",
     "lang": "en",
+    "license": "MIT",
     "name": "Lemo Nyaa English Dubs",
+    "nsfw": "false",
     "package": "lemo.nyaa.dub",
     "type": "bangumi",
     "url": "lemo.nyaa.dub.js",
