@@ -1,8 +1,13 @@
-[
-  {
-    "id": "lemo-nyaa-dub",
-    "name": "Lemo Nyaa English Dubs",
-    "version": "1.0.0",
-    "script": "https://raw.githubusercontent.com/Lemosine/LemoTest/main/dub-scraper.js"
-  }
-]
+{
+  "en": [
+    {
+      "name": "Lemo Nyaa English Dubs",
+      "version": "v1.0.0",
+      "author": "Lemosine",
+      "lang": "en",
+      "package": "lemo.nyaa.dub",
+      "type": "bangumi",
+      "webSite": "https://nyaa.si"
+    }
+  ]
+}
