@@ -1,66 +1,39 @@
-// ==MiruExtension==
-// @name Lemo Nyaa English Dubs
-// @version v1.0.0
-// @author Lemosine
-// @lang en
-// @package lemo.nyaa.dub
-// @type bangumi
-// @webSite https://nyaa.si
-// ==/MiruExtension==
+export default new class {
+  url=atob("aHR0cHM6Ly9yZWxlYXNlcy5tb2UvYXBpL2NvbGxlY3Rpb25zL2VudHJpZXM=");
+  
+  async single({anilistId: anilistId, titles: titles, episodeCount: episodeCount}) {
+    if (!navigator.onLine) return [];
+    if (!anilistId) throw new Error("No anilistId provided");
+    if (!titles?.length) throw new Error("No titles provided");
+    
+    const res = await fetch(`${this.url}?page=1&perPage=1&filter=(alID="${anilistId}"%26%26trs.dualAudio?=true)&skipTotal=1&expand=trs`), {items: items} = await res.json();
+    if (!items[0]?.expand?.trs?.length) return [];
+    
+    const {trs: trs} = items[0].expand;
+    
+    return trs.filter(({infoHash: infoHash, files: files, dualAudio: dualAudio}) => "<redacted>" !== infoHash && ((!episodeCount || 1 === episodeCount || 1 === files.length) && dualAudio)).map(torrent => ({
+      hash: torrent.infoHash,
+      link: torrent.infoHash,
+      title: 1 === torrent.files.length ? torrent.files[0].name : `[${torrent.releaseGroup}] ${titles[0]} ${torrent.dualAudio ? "Dual Audio" : ""}`,
+      size: torrent.files.reduce((prev, curr) => prev + curr.length, 0),
+      type: torrent.isBest ? "best" : "alt",
+      date: new Date(torrent.created),
+      seeders: 0,
+      leechers: 0,
+      downloads: 0,
+      accuracy: "high"
+    }));
+  }
 
-export default class extends Extension {
-    async search(query) {
-        const cleanQuery = encodeURIComponent(`${query} "dub"`);
-        const searchUrl = `https://nyaa.si/?f=0&c=1_2&q=${cleanQuery}`;
+  batch=() => [];
+  movie=() => [];
 
-        try {
-            const response = await this.request({
-                url: searchUrl,
-                method: "GET"
-            });
-            return this.parseNyaaHTML(response);
-        } catch (error) {
-            console.error("Lemo Scraper Error:", error);
-            return [];
-        }
+  async test() {
+    try {
+      if (!(await fetch(this.url)).ok) throw new Error(`Failed to load data from ${this.url}! Is the site down?`);
+      return !0;
+    } catch (error) {
+      throw new Error(`Could not reach ${this.url}! Does the site work in your region?`);
     }
-
-    parseNyaaHTML(html) {
-        const results = [];
-        const regex = /<a href="magnet:\?xt=urn:btih:([^"]+)"[^>]*>.*?title="([^"]+)"/g;
-        let match;
-
-        while ((match = regex.exec(html)) !== null) {
-            const infoHash = match[1];
-            const title = decodeURIComponent(match[2]).replace(/\+/g, ' ');
-            
-            results.push({
-                title: title,
-                url: `magnet:?xt=urn:btih:${infoHash}`
-            });
-        }
-
-        return results;
-    }
-
-    async latest() {
-        return [];
-    }
-
-    async detail(url) {
-        return {
-            title: "Anime Torrent Stream",
-            episodes: [{
-                title: "Play Video",
-                url: url
-            }]
-        };
-    }
-
-    async watch(url) {
-        return {
-            type: "torrent",
-            url: url
-        };
-    }
-}
+  }
+};

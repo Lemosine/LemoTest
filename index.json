@@ -1,15 +1,15 @@
 [
   {
     "author": "Lemosine",
-    "icon": "https://nyaa.si/static/favicon.png",
+    "icon": "https://seadex.moe/favicon.ico",
     "lang": "en",
     "license": "MIT",
-    "name": "Lemo Nyaa English Dubs",
+    "name": "Seadex Dubs (Corrected)",
     "nsfw": "false",
-    "package": "lemo.nyaa.dub",
+    "package": "lemo.seadex.dub",
     "type": "bangumi",
-    "url": "lemo.nyaa.dub.js",
-    "version": "v1.0.0",
-    "webSite": "https://nyaa.si"
+    "url": "lemo.seadex.dub.js",
+    "version": "v1.0.1",
+    "website": "https://releases.moe"
   }
 ]
