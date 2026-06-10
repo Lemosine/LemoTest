@@ -5,7 +5,7 @@
     "lang": "en",
     "license": "MIT",
     "name": "Seadex Dubs (Corrected)",
-    "nsfw": "false",
+    "nsfw": false,
     "package": "lemo.seadex.dub",
     "type": "bangumi",
     "url": "lemo.seadex.dub.js",
