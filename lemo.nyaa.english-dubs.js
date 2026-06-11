@@ -138,7 +138,7 @@ function episodeMatches(title, episode) {
 }
 
 function isBatchTitle(title) {
-  return /batch|complete|\b\d{1,3}\s*[-~]\s*\d{1,3}\b/i.test(title);
+  return /batch|complete|\b\d{1,3}\s*[-~]\s*\d{1,3}\b|\bS\d{1,2}E\d{1,3}\s*[-~]\s*E?\d{1,3}\b/i.test(title);
 }
 
 function seasonNumber(title) {
@@ -147,6 +147,21 @@ function seasonNumber(title) {
 
   const ordinal = title.match(/\b(\d+)(?:st|nd|rd|th)\s+season\b/i);
   return ordinal ? Number.parseInt(ordinal[1], 10) : null;
+}
+
+function titleVariants(titles) {
+  const variants = [];
+
+  for (const title of titles) {
+    const stripped = title
+      .replace(/\s*(?:season\s+\d+|\d+(?:st|nd|rd|th)\s+season)\s*$/i, "")
+      .trim();
+
+    if (stripped && stripped !== title) variants.push(stripped);
+    variants.push(title);
+  }
+
+  return [...new Set(variants)].slice(0, 4);
 }
 
 function applyExclusions(results, exclusions = []) {
@@ -170,7 +185,7 @@ async function search(query, suffixes, isBatch = false) {
   if (!query.titles?.length) return [];
 
   const request = query.fetch ?? fetch;
-  const titles = query.titles.slice(0, 3);
+  const titles = titleVariants(query.titles.slice(0, 3));
   const episode = query.episode == null ? null : String(query.episode).padStart(2, "0");
   const season = seasonNumber(titles.join(" "));
   const absolute = season && episode ? `S${String(season).padStart(2, "0")}E${episode}` : null;
@@ -192,6 +207,8 @@ async function search(query, suffixes, isBatch = false) {
 
       if (!episode || isBatch) searches.push(`${title} ${suffix}`);
     }
+
+    if (episode && !isBatch) searches.push(title);
   }
 
   const attempts = [...new Set(searches)].slice(0, MAX_SEARCHES);
