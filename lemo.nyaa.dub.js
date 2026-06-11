@@ -4,29 +4,47 @@ export default new class {
   url = API_URL;
   
   async single({ anilistId, titles, episodeCount, fetch: request = fetch }) {
-    if (!navigator.onLine) return [];
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return [];
     if (!anilistId) throw new Error("No anilistId provided");
     if (!titles?.length) throw new Error("No titles provided");
     
     const filter = encodeURIComponent(`(alID="${anilistId}"&&trs.dualAudio?=true)`);
     const res = await request(`${this.url}?page=1&perPage=1&filter=${filter}&skipTotal=1&expand=trs`);
-    const {items: items = []} = await res.json();
-    if (!items[0]?.expand?.trs?.length) return [];
+    const data = await res.json();
+    const items = Array.isArray(data?.items) ? data.items : [];
+    const trs = Array.isArray(items[0]?.expand?.trs) ? items[0].expand.trs : [];
+    if (!trs.length) return [];
     
-    const {trs: trs} = items[0].expand;
-    
-    return trs.filter(({infoHash: infoHash, files: files, dualAudio: dualAudio}) => "<redacted>" !== infoHash && ((!episodeCount || 1 === episodeCount || 1 === files.length) && dualAudio)).map(torrent => ({
-      hash: torrent.infoHash,
-      link: torrent.infoHash,
-      title: 1 === torrent.files.length ? torrent.files[0].name : `[${torrent.releaseGroup}] ${titles[0]} ${torrent.dualAudio ? "Dual Audio" : ""}`,
-      size: torrent.files.reduce((prev, curr) => prev + curr.length, 0),
-      type: torrent.isBest ? "best" : "alt",
-      date: new Date(torrent.created),
-      seeders: 0,
-      leechers: 0,
-      downloads: 0,
-      accuracy: "high"
-    }));
+    return trs
+      .filter(torrent => {
+        const files = Array.isArray(torrent.files) ? torrent.files : [];
+
+        return (
+          torrent.infoHash &&
+          "<redacted>" !== torrent.infoHash &&
+          torrent.dualAudio &&
+          (!episodeCount || 1 === episodeCount || 1 === files.length)
+        );
+      })
+      .map(torrent => {
+        const files = Array.isArray(torrent.files) ? torrent.files : [];
+        const title = 1 === files.length && files[0]?.name
+          ? files[0].name
+          : `[${torrent.releaseGroup ?? "SeaDex"}] ${titles[0]} Dual Audio`;
+
+        return {
+          hash: torrent.infoHash,
+          link: torrent.infoHash,
+          title,
+          size: files.reduce((prev, curr) => prev + (curr.length ?? 0), 0),
+          type: torrent.isBest ? "best" : "alt",
+          date: new Date(torrent.created),
+          seeders: 0,
+          leechers: 0,
+          downloads: 0,
+          accuracy: "high"
+        };
+      });
   }
 
   async batch() {
