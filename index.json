@@ -1,9 +1,9 @@
 [
   {
     "manifestVersion": 2,
-    "id": "lemuel.seadex.dubs",
+    "id": "hayase.extension.lemuel.seadex.dubs",
     "name": "Seadex Dubs",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "type": "torrent",
     "accuracy": "high",
     "ratio": 0,
