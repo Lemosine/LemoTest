@@ -1,12 +1,16 @@
+const API_URL = "https://releases.moe/api/collections/entries";
+
 export default new class {
-  url=atob("aHR0cHM6Ly9yZWxlYXNlcy5tb2UvYXBpL2NvbGxlY3Rpb25zL2VudHJpZXM=");
+  url = API_URL;
   
-  async single({anilistId: anilistId, titles: titles, episodeCount: episodeCount}) {
+  async single({ anilistId, titles, episodeCount, fetch: request = fetch }) {
     if (!navigator.onLine) return [];
     if (!anilistId) throw new Error("No anilistId provided");
     if (!titles?.length) throw new Error("No titles provided");
     
-    const res = await fetch(`${this.url}?page=1&perPage=1&filter=(alID="${anilistId}"%26%26trs.dualAudio?=true)&skipTotal=1&expand=trs`), {items: items} = await res.json();
+    const filter = encodeURIComponent(`(alID="${anilistId}"&&trs.dualAudio?=true)`);
+    const res = await request(`${this.url}?page=1&perPage=1&filter=${filter}&skipTotal=1&expand=trs`);
+    const {items: items = []} = await res.json();
     if (!items[0]?.expand?.trs?.length) return [];
     
     const {trs: trs} = items[0].expand;
@@ -25,15 +29,23 @@ export default new class {
     }));
   }
 
-  batch=() => [];
-  movie=() => [];
+  async batch() {
+    return [];
+  }
+
+  async movie() {
+    return [];
+  }
 
   async test() {
     try {
-      if (!(await fetch(this.url)).ok) throw new Error(`Failed to load data from ${this.url}! Is the site down?`);
-      return !0;
-    } catch (error) {
+      if (!(await fetch(this.url)).ok) {
+        throw new Error(`Failed to load data from ${this.url}! Is the site down?`);
+      }
+
+      return true;
+    } catch {
       throw new Error(`Could not reach ${this.url}! Does the site work in your region?`);
     }
   }
-};
+}();
