@@ -13,5 +13,22 @@
     "icon": "https://webtorrent.io/img/webtorrent-small.png",
     "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
     "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.nyaa.dub.js"
+  },
+  {
+    "manifestVersion": 2,
+    "id": "hayase.extension.lemosine.nyaa.english-dubs",
+    "name": "Lemo Nyaa (Dub)",
+    "version": "1.0.0",
+    "description": "English-audio anime torrents from Nyaa.si.",
+    "type": "torrent",
+    "accuracy": "low",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "dub",
+    "languages": ["US"],
+    "url": "aHR0cHM6Ly9ueWFhLnNp",
+    "icon": "https://nyaa.si/static/favicon.png",
+    "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
+    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.nyaa.english-dubs.js"
   }
 ]
