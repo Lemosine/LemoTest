@@ -1,4 +1,16 @@
-const API_URL = "https://releases.moe/api/collections/entries";
+const API_URL = "https://releases.moe/api/collections/entries/records";
+
+const TRACKERS = [
+  "http://nyaa.tracker.wf:7777/announce",
+  "udp://open.stealth.si:80/announce",
+  "udp://tracker.opentrackr.org:1337/announce",
+  "udp://exodus.desync.com:6969/announce",
+  "udp://tracker.torrent.eu.org:451/announce"
+].map(tracker => `&tr=${encodeURIComponent(tracker)}`).join("");
+
+function magnet(hash, title) {
+  return `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(title)}${TRACKERS}`;
+}
 
 export default new class {
   url = API_URL;
@@ -8,8 +20,8 @@ export default new class {
     if (!anilistId) throw new Error("No anilistId provided");
     if (!titles?.length) throw new Error("No titles provided");
     
-    const filter = encodeURIComponent(`(alID="${anilistId}"&&trs.dualAudio?=true)`);
-    const res = await request(`${this.url}?page=1&perPage=1&filter=${filter}&skipTotal=1&expand=trs`);
+    const filter = encodeURIComponent(`alID="${anilistId}"`);
+    const res = await request(`${this.url}?page=1&perPage=200&filter=${filter}&skipTotal=1&expand=trs`);
     const data = await res.json();
     const items = Array.isArray(data?.items) ? data.items : [];
     const trs = Array.isArray(items[0]?.expand?.trs) ? items[0].expand.trs : [];
@@ -23,7 +35,7 @@ export default new class {
           torrent.infoHash &&
           "<redacted>" !== torrent.infoHash &&
           torrent.dualAudio &&
-          (!episodeCount || 1 === episodeCount || 1 === files.length)
+          files.length > 0
         );
       })
       .map(torrent => {
@@ -34,7 +46,7 @@ export default new class {
 
         return {
           hash: torrent.infoHash,
-          link: torrent.infoHash,
+          link: magnet(torrent.infoHash, title),
           title,
           size: files.reduce((prev, curr) => prev + (curr.length ?? 0), 0),
           type: torrent.isBest ? "best" : "alt",

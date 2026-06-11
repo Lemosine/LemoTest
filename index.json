@@ -3,7 +3,7 @@
     "manifestVersion": 2,
     "id": "hayase.extension.lemosine.seadex.english-dubs",
     "name": "SeaDex English Dubs",
-    "version": "1.0.8",
+    "version": "1.0.10",
     "description": "English-audio torrent results from SeaDex/Releases.moe.",
     "type": "torrent",
     "accuracy": "high",
