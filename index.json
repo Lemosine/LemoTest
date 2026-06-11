@@ -30,5 +30,22 @@
     "icon": "https://nyaa.si/static/favicon.png",
     "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
     "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.nyaa.english-dubs.js?v=1.0.2"
+  },
+  {
+    "manifestVersion": 2,
+    "id": "hayase.extension.lemosine.nekobt.english-dubs",
+    "name": "Lemo NekoBT Dubs",
+    "version": "0.0.8",
+    "description": "English-audio torrent results from NekoBT.",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "dub",
+    "updatePeers": false,
+    "languages": ["US"],
+    "url": "aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==",
+    "icon": "https://nekobt.to/cdn/pfp/null/64",
+    "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
+    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.nekobt.dubs.js?v=0.0.8"
   }
 ]
