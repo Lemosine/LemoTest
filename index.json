@@ -1,10 +1,10 @@
 [
   {
     "manifestVersion": 2,
-    "id": "hayase.extension.lemuel.seadex.dubs",
-    "name": "Seadex Dubs",
-    "version": "1.0.5",
-    "description": "Dual-audio torrent results from SeaDex/Releases.moe.",
+    "id": "hayase.extension.lemosine.seadex.english-dubs",
+    "name": "SeaDex English Dubs",
+    "version": "1.0.6",
+    "description": "English-audio torrent results from SeaDex/Releases.moe.",
     "type": "torrent",
     "accuracy": "high",
     "ratio": 0,
