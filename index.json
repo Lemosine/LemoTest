@@ -47,5 +47,28 @@
     "icon": "https://nekobt.to/cdn/pfp/null/64",
     "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
     "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.nekobt.dubs.js?v=0.0.8"
+  },
+  {
+    "manifestVersion": 2,
+    "id": "hayase.extension.lemosine.animetosho.old",
+    "name": "Lemo AnimeTosho (Old)",
+    "version": "0.1.5",
+    "description": "AnimeTosho torrent results by AniDB episode or anime id.",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "sub",
+    "languages": ["US"],
+    "url": "aHR0cHM6Ly9mZWVkLmFuaW1ldG9zaG8ub3JnL2pzb24=",
+    "icon": "https://animetosho.org/inc/favicon.ico",
+    "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
+    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.animetosho.old.js?v=0.1.5",
+    "options": {
+      "useTorrent": {
+        "type": "boolean",
+        "description": "Use .torrent files instead of magnet links.",
+        "default": false
+      }
+    }
   }
 ]
