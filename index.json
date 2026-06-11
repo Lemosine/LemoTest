@@ -3,13 +3,13 @@
     "manifestVersion": 2,
     "id": "lemuel.seadex.dubs",
     "name": "Seadex Dubs",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "type": "torrent",
     "accuracy": "high",
     "ratio": 0,
     "media": "dub",
     "languages": ["US"],
     "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/main/index.json",
-    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/main/source.js"
+    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/main/lemo.nyadub.js"
   }
 ]
