@@ -1,4 +1,5 @@
 const QUALITIES = ["1080", "720", "540", "480"];
+const AUDIO_RE = /\b(dubbed|dual[-\s._]?audio|dual|english[-\s._]?(?:dub|audio)|eng[-\s._]?(?:dub|audio)|multi[-\s._]?audio)\b/i;
 
 export default new class Tosho {
   url = atob("aHR0cHM6Ly9mZWVkLmFuaW1ldG9zaG8ub3JnL2pzb24=");
@@ -15,18 +16,20 @@ export default new class Tosho {
   }
 
   map(entries, batch = false, useTorrent = false) {
-    return entries.map(entry => ({
-      title: entry.title || entry.torrent_name,
-      link: useTorrent ? entry.torrent_url : entry.magnet_uri,
-      seeders: (entry.seeders || 0) >= 3e4 ? 0 : entry.seeders || 0,
-      leechers: (entry.leechers || 0) >= 3e4 ? 0 : entry.leechers || 0,
-      downloads: entry.torrent_downloaded_count || 0,
-      hash: entry.info_hash,
-      size: entry.total_size,
-      accuracy: entry.anidb_fid && !batch ? "high" : "medium",
-      type: batch ? "batch" : undefined,
-      date: new Date(1e3 * entry.timestamp)
-    }));
+    return entries
+      .filter(entry => AUDIO_RE.test(entry.title || entry.torrent_name || ""))
+      .map(entry => ({
+        title: entry.title || entry.torrent_name,
+        link: useTorrent ? entry.torrent_url : entry.magnet_uri,
+        seeders: (entry.seeders || 0) >= 3e4 ? 0 : entry.seeders || 0,
+        leechers: (entry.leechers || 0) >= 3e4 ? 0 : entry.leechers || 0,
+        downloads: entry.torrent_downloaded_count || 0,
+        hash: entry.info_hash,
+        size: entry.total_size,
+        accuracy: entry.anidb_fid && !batch ? "high" : "medium",
+        type: batch ? "batch" : undefined,
+        date: new Date(1e3 * entry.timestamp)
+      }));
   }
 
   async single({ anidbEid, resolution, exclusions = [], fetch: request = fetch }, options) {

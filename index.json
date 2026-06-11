@@ -51,18 +51,18 @@
   {
     "manifestVersion": 2,
     "id": "hayase.extension.lemosine.animetosho.old",
-    "name": "Lemo AnimeTosho (Old)",
-    "version": "0.1.5",
-    "description": "AnimeTosho torrent results by AniDB episode or anime id.",
+    "name": "Lemo AnimeTosho Dubs",
+    "version": "0.1.6",
+    "description": "English-audio AnimeTosho torrent results by AniDB episode or anime id.",
     "type": "torrent",
     "accuracy": "high",
     "ratio": 0,
-    "media": "sub",
+    "media": "dub",
     "languages": ["US"],
     "url": "aHR0cHM6Ly9mZWVkLmFuaW1ldG9zaG8ub3JnL2pzb24=",
     "icon": "https://animetosho.org/inc/favicon.ico",
     "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
-    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.animetosho.old.js?v=0.1.5",
+    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.animetosho.old.js?v=0.1.6",
     "options": {
       "useTorrent": {
         "type": "boolean",
@@ -70,46 +70,5 @@
         "default": false
       }
     }
-  },
-  {
-    "manifestVersion": 2,
-    "id": "hayase.extension.lemosine.subsplease",
-    "name": "Lemo SubsPlease",
-    "version": "2.0.1",
-    "description": "Trusted SubsPlease simulcast torrent results.",
-    "type": "torrent",
-    "accuracy": "medium",
-    "updatePeers": true,
-    "ratio": 0,
-    "media": "sub",
-    "languages": ["US"],
-    "url": "aHR0cHM6Ly9zdWJzcGxlYXNlLm9yZw==",
-    "icon": "https://subsplease.org/wp-content/uploads/2020/05/cropped-cropped-icon-32x32.png",
-    "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
-    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.subsplease.js?v=2.0.1",
-    "options": {
-      "resolution": {
-        "type": "string",
-        "description": "Preferred resolution: 1080, 720, or 480. Leave empty to use Hayase's resolution setting.",
-        "default": "1080"
-      }
-    }
-  },
-  {
-    "manifestVersion": 2,
-    "id": "hayase.extension.lemosine.erai-raws",
-    "name": "Lemo Erai-raws",
-    "version": "1.0.0",
-    "description": "Erai-raws subtitled anime torrents from Nyaa.si.",
-    "type": "torrent",
-    "accuracy": "high",
-    "updatePeers": true,
-    "ratio": 0,
-    "media": "sub",
-    "languages": ["US"],
-    "url": "aHR0cHM6Ly9ueWFhLnNp",
-    "icon": "https://nyaa.si/static/favicon.png",
-    "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
-    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.erai-raws.js?v=1.0.0"
   }
 ]
