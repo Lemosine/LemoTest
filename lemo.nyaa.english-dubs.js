@@ -1,7 +1,8 @@
 const DOMAIN = "https://nyaa.si";
 const CATEGORY = "1_2";
 const FILTER = "0";
-const TIMEOUT_MS = 15000;
+const TIMEOUT_MS = 6000;
+const MAX_SEARCHES = 8;
 
 const TRACKERS = [
   "http://nyaa.tracker.wf:7777/announce",
@@ -62,16 +63,29 @@ function buildUrl(query) {
 
 async function fetchText(request, url) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  let timer;
 
-  try {
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new Error("Nyaa did not respond in time."));
+    }, TIMEOUT_MS);
+  });
+
+  const response = (async () => {
     const res = await request(url, {
       signal: controller.signal,
       headers: { Accept: "application/rss+xml, application/xml, text/xml" }
     });
 
     if (!res.ok) throw new Error(`Nyaa returned HTTP ${res.status}.`);
-    return await res.text();
+    return res.text();
+  })();
+
+  response.catch(() => {});
+
+  try {
+    return await Promise.race([response, timeout]);
   } catch (error) {
     if (error.name === "AbortError") throw new Error("Nyaa did not respond in time.");
     throw new Error(`Could not reach Nyaa: ${error.message}`);
@@ -127,6 +141,14 @@ function isBatchTitle(title) {
   return /batch|complete|\b\d{1,3}\s*[-~]\s*\d{1,3}\b/i.test(title);
 }
 
+function seasonNumber(title) {
+  const season = title.match(/\bseason\s+(\d+)\b/i);
+  if (season) return Number.parseInt(season[1], 10);
+
+  const ordinal = title.match(/\b(\d+)(?:st|nd|rd|th)\s+season\b/i);
+  return ordinal ? Number.parseInt(ordinal[1], 10) : null;
+}
+
 function applyExclusions(results, exclusions = []) {
   const blocked = exclusions.map(item => item.toLowerCase()).filter(Boolean);
   if (!blocked.length) return results;
@@ -150,11 +172,14 @@ async function search(query, suffixes, isBatch = false) {
   const request = query.fetch ?? fetch;
   const titles = query.titles.slice(0, 3);
   const episode = query.episode == null ? null : String(query.episode).padStart(2, "0");
+  const season = seasonNumber(titles.join(" "));
+  const absolute = season && episode ? `S${String(season).padStart(2, "0")}E${episode}` : null;
   const searches = [];
 
   for (const title of titles) {
     for (const suffix of suffixes) {
       if (episode && !isBatch) {
+        if (absolute) searches.push(`${title} ${absolute} ${suffix}`);
         searches.push(`${title} - ${episode} ${suffix}`);
         searches.push(`${title} ${episode} ${suffix}`);
       }
@@ -165,16 +190,19 @@ async function search(query, suffixes, isBatch = false) {
         searches.push(`${title} season ${suffix}`);
       }
 
-      searches.push(`${title} ${suffix}`);
+      if (!episode || isBatch) searches.push(`${title} ${suffix}`);
     }
   }
 
-  const results = [];
-  for (const item of [...new Set(searches)]) {
+  const attempts = [...new Set(searches)].slice(0, MAX_SEARCHES);
+  const settled = await Promise.allSettled(attempts.map(async item => {
     const xml = await fetchText(request, buildUrl(item));
-    results.push(...parseRss(xml, query));
-    if (results.length >= 20) break;
-  }
+    return parseRss(xml, query);
+  }));
+
+  const results = settled
+    .filter(item => item.status === "fulfilled")
+    .flatMap(item => item.value);
 
   return applyExclusions(dedupe(results), query.exclusions);
 }
