@@ -94,5 +94,22 @@
         "default": "1080"
       }
     }
+  },
+  {
+    "manifestVersion": 2,
+    "id": "hayase.extension.lemosine.erai-raws",
+    "name": "Lemo Erai-raws",
+    "version": "1.0.0",
+    "description": "Erai-raws subtitled anime torrents from Nyaa.si.",
+    "type": "torrent",
+    "accuracy": "high",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "sub",
+    "languages": ["US"],
+    "url": "aHR0cHM6Ly9ueWFhLnNp",
+    "icon": "https://nyaa.si/static/favicon.png",
+    "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
+    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.erai-raws.js?v=1.0.0"
   }
 ]
