@@ -34,7 +34,7 @@ export default new class Tosho {
 
   async single({ anidbEid, resolution, exclusions = [], fetch: request = fetch }, options) {
     if (typeof navigator !== "undefined" && navigator.onLine === false) return [];
-    if (!anidbEid) throw new Error("No anidbEid provided");
+    if (!anidbEid) return [];
 
     const query = this._buildQuery({ resolution, exclusions });
     const res = await request(this.url + "?eid=" + anidbEid + query);
@@ -44,7 +44,7 @@ export default new class Tosho {
 
   async batch({ anidbAid, resolution, exclusions = [], episode, fetch: request = fetch }, options) {
     if (typeof navigator !== "undefined" && navigator.onLine === false) return [];
-    if (!anidbAid) throw new Error("No anidbAid provided");
+    if (!anidbAid) return [];
 
     const query = this._buildQuery({ resolution, exclusions });
     const res = await request(this.url + "?order=size-d&aid=" + anidbAid + query);
@@ -54,7 +54,7 @@ export default new class Tosho {
 
   async movie({ anidbAid, resolution, exclusions = [], fetch: request = fetch }, options) {
     if (typeof navigator !== "undefined" && navigator.onLine === false) return [];
-    if (!anidbAid) throw new Error("No anidbAid provided");
+    if (!anidbAid) return [];
 
     const query = this._buildQuery({ resolution, exclusions });
     const res = await request(this.url + "?aid=" + anidbAid + query);

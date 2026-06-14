@@ -18,7 +18,7 @@
     "manifestVersion": 2,
     "id": "hayase.extension.lemosine.nyaa.english-dubs",
     "name": "Lemo Nyaa (Dub)",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "English-audio anime torrents from Nyaa.si.",
     "type": "torrent",
     "accuracy": "low",
@@ -29,7 +29,7 @@
     "url": "aHR0cHM6Ly9ueWFhLnNp",
     "icon": "https://nyaa.si/static/favicon.png",
     "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
-    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.nyaa.english-dubs.js?v=1.0.2"
+    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.nyaa.english-dubs.js?v=1.0.3"
   },
   {
     "manifestVersion": 2,
@@ -52,7 +52,7 @@
     "manifestVersion": 2,
     "id": "hayase.extension.lemosine.animetosho.old",
     "name": "Lemo AnimeTosho Dubs",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "English-audio AnimeTosho torrent results by AniDB episode or anime id.",
     "type": "torrent",
     "accuracy": "high",
@@ -62,7 +62,7 @@
     "url": "aHR0cHM6Ly9mZWVkLmFuaW1ldG9zaG8ub3JnL2pzb24=",
     "icon": "https://animetosho.org/inc/favicon.ico",
     "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
-    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.animetosho.old.js?v=0.1.6",
+    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.animetosho.old.js?v=0.1.7",
     "options": {
       "useTorrent": {
         "type": "boolean",

@@ -97,13 +97,15 @@ async function fetchText(request, url) {
 function parseRss(xml, query) {
   if (!xml.includes("<rss")) return [];
 
+  const expectedSeason = query.expectedSeason;
   const items = xml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
   return items
     .map(item => {
       const title = tag(item, "title");
       const hash = nyaaTag(item, "infoHash").toLowerCase();
       if (!title || !hash || !AUDIO_RE.test(title)) return null;
-      if (query.episode && !episodeMatches(title, query.episode) && !isBatchTitle(title)) return null;
+      if (!seasonMatches(title, expectedSeason)) return null;
+      if (query.episode && !episodeMatches(title, query.episode) && !rangeContainsEpisode(title, query.episode)) return null;
 
       const seeders = Number.parseInt(nyaaTag(item, "seeders") || "0", 10);
       const leechers = Number.parseInt(nyaaTag(item, "leechers") || "0", 10);
@@ -137,6 +139,22 @@ function episodeMatches(title, episode) {
   ].some(pattern => pattern.test(title));
 }
 
+function rangeContainsEpisode(title, episode) {
+  const ep = Number.parseInt(episode, 10);
+  if (!Number.isFinite(ep)) return false;
+
+  const ranges = [
+    ...title.matchAll(/\bS\d{1,2}E(\d{1,4})\s*[-~]\s*E?(\d{1,4})\b/gi),
+    ...title.matchAll(/\b(\d{1,4})\s*[-~]\s*(\d{1,4})\b/g)
+  ];
+
+  return ranges.some(match => {
+    const start = Number.parseInt(match[1], 10);
+    const end = Number.parseInt(match[2], 10);
+    return Number.isFinite(start) && Number.isFinite(end) && ep >= Math.min(start, end) && ep <= Math.max(start, end);
+  });
+}
+
 function isBatchTitle(title) {
   return /batch|complete|\b\d{1,3}\s*[-~]\s*\d{1,3}\b|\bS\d{1,2}E\d{1,3}\s*[-~]\s*E?\d{1,3}\b/i.test(title);
 }
@@ -147,6 +165,25 @@ function seasonNumber(title) {
 
   const ordinal = title.match(/\b(\d+)(?:st|nd|rd|th)\s+season\b/i);
   return ordinal ? Number.parseInt(ordinal[1], 10) : null;
+}
+
+function resultSeasonNumber(title) {
+  const absolute = title.match(/\bS(\d{1,2})E\d{1,4}\b/i);
+  if (absolute) return Number.parseInt(absolute[1], 10);
+
+  const short = title.match(/\bS(\d{1,2})\b/i);
+  if (short) return Number.parseInt(short[1], 10);
+
+  return seasonNumber(title);
+}
+
+function seasonMatches(title, expectedSeason) {
+  if (!expectedSeason) return true;
+
+  const actualSeason = resultSeasonNumber(title);
+  if (actualSeason) return actualSeason === expectedSeason;
+
+  return expectedSeason === 1;
 }
 
 function titleVariants(titles) {
@@ -188,6 +225,7 @@ async function search(query, suffixes, isBatch = false) {
   const titles = titleVariants(query.titles.slice(0, 3));
   const episode = query.episode == null ? null : String(query.episode).padStart(2, "0");
   const season = seasonNumber(titles.join(" "));
+  const normalizedQuery = { ...query, expectedSeason: season };
   const absolute = season && episode ? `S${String(season).padStart(2, "0")}E${episode}` : null;
   const searches = [];
 
@@ -214,14 +252,14 @@ async function search(query, suffixes, isBatch = false) {
   const attempts = [...new Set(searches)].slice(0, MAX_SEARCHES);
   const settled = await Promise.allSettled(attempts.map(async item => {
     const xml = await fetchText(request, buildUrl(item));
-    return parseRss(xml, query);
+    return parseRss(xml, normalizedQuery);
   }));
 
   const results = settled
     .filter(item => item.status === "fulfilled")
     .flatMap(item => item.value);
 
-  return applyExclusions(dedupe(results), query.exclusions);
+  return applyExclusions(dedupe(results), normalizedQuery.exclusions);
 }
 
 export default {
