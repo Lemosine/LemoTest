@@ -14,6 +14,14 @@ const TRACKERS = [
 
 const AUDIO_RE = /\b(dubbed|dual[-\s._]?audio|english[-\s._]?dub|eng[-\s._]?dub|multi[-\s._]?audio)\b/i;
 
+const COUR_RELEASE_MAPPINGS = [
+  {
+    title: /\bdr\.?\s*stone\s+science\s+future\b/i,
+    season: 4,
+    offsets: { 1: 0, 2: 12, 3: 24 }
+  }
+];
+
 function decodeEntities(value) {
   return value
     .replace(/<!\[CDATA\[|\]\]>/g, "")
@@ -167,6 +175,25 @@ function seasonNumber(title) {
   return ordinal ? Number.parseInt(ordinal[1], 10) : null;
 }
 
+function courNumber(title) {
+  const cour = title.match(/\bcour\s+(\d+)\b/i);
+  return cour ? Number.parseInt(cour[1], 10) : null;
+}
+
+function releaseNumbering(titles, episode) {
+  const joined = titles.join(" ");
+  const cour = courNumber(joined);
+  const localEpisode = Number.parseInt(episode, 10);
+  const mapping = COUR_RELEASE_MAPPINGS.find(item => item.title.test(joined));
+  const offset = mapping?.offsets[cour];
+
+  if (mapping && Number.isFinite(localEpisode) && Number.isFinite(offset)) {
+    return { season: mapping.season, episode: localEpisode + offset };
+  }
+
+  return { season: seasonNumber(joined), episode };
+}
+
 function resultSeasonNumber(title) {
   const absolute = title.match(/\bS(\d{1,2})E\d{1,4}\b/i);
   if (absolute) return Number.parseInt(absolute[1], 10);
@@ -191,7 +218,7 @@ function titleVariants(titles) {
 
   for (const title of titles) {
     const stripped = title
-      .replace(/\s*(?:season\s+\d+|\d+(?:st|nd|rd|th)\s+season)\s*$/i, "")
+      .replace(/\s*(?:season\s+\d+|\d+(?:st|nd|rd|th)\s+season|cour\s+\d+)\s*$/i, "")
       .trim();
 
     if (stripped && stripped !== title) variants.push(stripped);
@@ -223,9 +250,10 @@ async function search(query, suffixes, isBatch = false) {
 
   const request = query.fetch ?? fetch;
   const titles = titleVariants(query.titles.slice(0, 3));
-  const episode = query.episode == null ? null : String(query.episode).padStart(2, "0");
-  const season = seasonNumber(titles.join(" "));
-  const normalizedQuery = { ...query, expectedSeason: season };
+  const numbering = releaseNumbering(query.titles, query.episode);
+  const episode = numbering.episode == null ? null : String(numbering.episode).padStart(2, "0");
+  const season = numbering.season;
+  const normalizedQuery = { ...query, episode: numbering.episode, expectedSeason: season };
   const absolute = season && episode ? `S${String(season).padStart(2, "0")}E${episode}` : null;
   const searches = [];
 
