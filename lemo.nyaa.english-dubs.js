@@ -16,6 +16,8 @@ const AUDIO_RE = /\b(dubbed|dual[-\s._]?audio|english[-\s._]?dub|eng[-\s._]?dub|
 
 const COUR_RELEASE_MAPPINGS = [
   {
+    anilistId: 199221,
+    cour: 3,
     title: /\bdr\.?\s*stone\s+science\s+future\b/i,
     season: 4,
     offsets: { 1: 0, 2: 12, 3: 24 }
@@ -176,15 +178,20 @@ function seasonNumber(title) {
 }
 
 function courNumber(title) {
-  const cour = title.match(/\bcour\s+(\d+)\b/i);
+  const cour = title.match(/\b(?:cour|part)\s+(\d+)\b/i)
+    ?? title.match(/(\d+)\s*クール/);
   return cour ? Number.parseInt(cour[1], 10) : null;
 }
 
-function releaseNumbering(titles, episode) {
+function releaseNumbering(titles, episode, anilistId) {
   const joined = titles.join(" ");
-  const cour = courNumber(joined);
   const localEpisode = Number.parseInt(episode, 10);
-  const mapping = COUR_RELEASE_MAPPINGS.find(item => item.title.test(joined));
+  const numericAnilistId = Number.parseInt(anilistId, 10);
+  const mapping = COUR_RELEASE_MAPPINGS.find(item => (
+    item.anilistId === numericAnilistId || item.title.test(joined)
+  ));
+  const cour = courNumber(joined)
+    ?? (mapping?.anilistId === numericAnilistId ? mapping.cour : null);
   const offset = mapping?.offsets[cour];
 
   if (mapping && Number.isFinite(localEpisode) && Number.isFinite(offset)) {
@@ -218,7 +225,7 @@ function titleVariants(titles) {
 
   for (const title of titles) {
     const stripped = title
-      .replace(/\s*(?:season\s+\d+|\d+(?:st|nd|rd|th)\s+season|cour\s+\d+)\s*$/i, "")
+      .replace(/\s*(?:season\s+\d+|\d+(?:st|nd|rd|th)\s+season|(?:cour|part)\s+\d+|\d+\s*クール)\s*$/i, "")
       .trim();
 
     if (stripped && stripped !== title) variants.push(stripped);
@@ -250,7 +257,7 @@ async function search(query, suffixes, isBatch = false) {
 
   const request = query.fetch ?? fetch;
   const titles = titleVariants(query.titles.slice(0, 3));
-  const numbering = releaseNumbering(query.titles, query.episode);
+  const numbering = releaseNumbering(query.titles, query.episode, query.anilistId);
   const episode = numbering.episode == null ? null : String(numbering.episode).padStart(2, "0");
   const season = numbering.season;
   const normalizedQuery = { ...query, episode: numbering.episode, expectedSeason: season };
