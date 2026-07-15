@@ -8,6 +8,24 @@ const TRACKERS = [
   "udp://tracker.torrent.eu.org:451/announce"
 ].map(tracker => `&tr=${encodeURIComponent(tracker)}`).join("");
 
+async function fetchJson(request, url) {
+  const res = await request(url, {
+    headers: { Accept: "application/json" }
+  });
+
+  if (!res.ok) return null;
+
+  const text = await res.text();
+  const trimmed = text.trim();
+  if (!trimmed || (!trimmed.startsWith("{") && !trimmed.startsWith("["))) return null;
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+}
+
 function magnet(hash, title) {
   return `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(title)}${TRACKERS}`;
 }
@@ -17,12 +35,10 @@ export default new class {
   
   async single({ anilistId, titles, episodeCount, fetch: request = fetch }) {
     if (typeof navigator !== "undefined" && navigator.onLine === false) return [];
-    if (!anilistId) throw new Error("No anilistId provided");
-    if (!titles?.length) throw new Error("No titles provided");
+    if (!anilistId || !titles?.length) return [];
     
     const filter = encodeURIComponent(`alID="${anilistId}"`);
-    const res = await request(`${this.url}?page=1&perPage=200&filter=${filter}&skipTotal=1&expand=trs`);
-    const data = await res.json();
+    const data = await fetchJson(request, `${this.url}?page=1&perPage=200&filter=${filter}&skipTotal=1&expand=trs`);
     const items = Array.isArray(data?.items) ? data.items : [];
     const trs = Array.isArray(items[0]?.expand?.trs) ? items[0].expand.trs : [];
     if (!trs.length) return [];
