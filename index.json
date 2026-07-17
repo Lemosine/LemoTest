@@ -35,7 +35,7 @@
     "manifestVersion": 2,
     "id": "hayase.extension.lemosine.nekobt.english-dubs",
     "name": "Lemo NekoBT Dubs",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "description": "English-audio torrent results from NekoBT.",
     "type": "torrent",
     "accuracy": "high",
@@ -46,7 +46,7 @@
     "url": "aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==",
     "icon": "https://nekobt.to/cdn/pfp/null/64",
     "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/index.json",
-    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.nekobt.dubs.js?v=0.0.8"
+    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/fix/hayase-extension-config/lemo.nekobt.dubs.js?v=0.0.9"
   },
   {
     "manifestVersion": 2,

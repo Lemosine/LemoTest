@@ -1,14 +1,31 @@
 const QUALITIES = ["1080", "720", "540", "480"];
 
+async function fetchJson(request, url) {
+  const res = await request(url, {
+    headers: { Accept: "application/json" }
+  });
+
+  if (!res.ok) return null;
+
+  const text = await res.text();
+  const trimmed = text.trim();
+  if (!trimmed || (!trimmed.startsWith("{") && !trimmed.startsWith("["))) return null;
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+}
+
 export default new class NekoBT {
   url = atob("aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==");
 
   async _fetch(request, search) {
-    const res = await request(`${this.url}torrents/search?${search}`);
-    const json = await res.json();
+    const json = await fetchJson(request, `${this.url}torrents/search?${search}`);
 
-    if (json.error) throw new Error("NekoBT: " + json.message);
-    if (!json.data) throw new Error("NekoBT: Invalid response from server!");
+    if (json?.error) throw new Error("NekoBT: " + json.message);
+    if (!json?.data) return null;
     return json.data;
   }
 
@@ -28,7 +45,7 @@ export default new class NekoBT {
     if (tmdbId) mediaParams.append("tmdbid", tmdbId);
 
     const mappings = await this._fetch(request, mediaParams);
-    if (!mappings?.media) throw new Error("NekoBT: No media found for the given anime!");
+    if (!mappings?.media) return [];
 
     const ep = mappings.media.episodes?.find(item => item.tvdbId === tvdbEId)
       ?? mappings.media.episodes?.find(item => item.episode === episode);
@@ -45,7 +62,7 @@ export default new class NekoBT {
       ? lowerExclusions.concat(...QUALITIES.filter(item => item !== resolution).map(item => `${item}p`))
       : lowerExclusions;
 
-    return (await this._fetch(request, searchParams)).results
+    return (await this._fetch(request, searchParams))?.results
       ?.filter(({ title }) => {
         if (!effectiveExclusions.length) return true;
         const lowerTitle = title.toLowerCase();
