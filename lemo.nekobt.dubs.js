@@ -18,6 +18,45 @@ async function fetchJson(request, url) {
   }
 }
 
+function episodeMatches(title, episode) {
+  const ep = String(episode);
+  const ep2 = ep.padStart(2, "0");
+  const ep3 = ep.padStart(3, "0");
+  return [
+    new RegExp(`(^|[^\\d])${ep2}([^\\d]|$)`),
+    new RegExp(`(^|[^\\d])${ep3}([^\\d]|$)`),
+    new RegExp(`e${ep2}([^\\d]|$)`, "i")
+  ].some(pattern => pattern.test(title));
+}
+
+function rangeForEpisode(title, episode) {
+  const ep = Number.parseInt(episode, 10);
+  if (!Number.isFinite(ep)) return null;
+
+  const ranges = [
+    ...title.matchAll(/\bS\d{1,2}E(\d{1,4})\s*[-~]\s*E?(\d{1,4})\b/gi),
+    ...title.matchAll(/\b(\d{1,4})\s*[-~]\s*(\d{1,4})\b/g)
+  ];
+
+  for (const match of ranges) {
+    const start = Number.parseInt(match[1], 10);
+    const end = Number.parseInt(match[2], 10);
+    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+
+    const low = Math.min(start, end);
+    const high = Math.max(start, end);
+    if (ep >= low && ep <= high) return { start: low, end: high, span: high - low + 1 };
+  }
+
+  return null;
+}
+
+function acceptableEpisodeResult(title, episode) {
+  if (!episode) return true;
+  if (rangeForEpisode(title, episode)) return false;
+  return episodeMatches(title, episode);
+}
+
 export default new class NekoBT {
   url = atob("aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==");
 
@@ -64,6 +103,7 @@ export default new class NekoBT {
 
     return (await this._fetch(request, searchParams))?.results
       ?.filter(({ title }) => {
+        if (!acceptableEpisodeResult(title, episode)) return false;
         if (!effectiveExclusions.length) return true;
         const lowerTitle = title.toLowerCase();
         return !effectiveExclusions.some(item => lowerTitle.includes(item));

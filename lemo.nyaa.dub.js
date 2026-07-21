@@ -8,6 +8,17 @@ const TRACKERS = [
   "udp://tracker.torrent.eu.org:451/announce"
 ].map(tracker => `&tr=${encodeURIComponent(tracker)}`).join("");
 
+function episodeMatches(title, episode) {
+  const ep = String(episode);
+  const ep2 = ep.padStart(2, "0");
+  const ep3 = ep.padStart(3, "0");
+  return [
+    new RegExp(`(^|[^\\d])${ep2}([^\\d]|$)`),
+    new RegExp(`(^|[^\\d])${ep3}([^\\d]|$)`),
+    new RegExp(`e${ep2}([^\\d]|$)`, "i")
+  ].some(pattern => pattern.test(title));
+}
+
 async function fetchJson(request, url) {
   const res = await request(url, {
     headers: { Accept: "application/json" }
@@ -33,7 +44,7 @@ function magnet(hash, title) {
 export default new class {
   url = API_URL;
   
-  async single({ anilistId, titles, episodeCount, fetch: request = fetch }) {
+  async single({ anilistId, titles, episode, episodeCount, fetch: request = fetch }) {
     if (typeof navigator !== "undefined" && navigator.onLine === false) return [];
     if (!anilistId || !titles?.length) return [];
     
@@ -51,7 +62,8 @@ export default new class {
           torrent.infoHash &&
           "<redacted>" !== torrent.infoHash &&
           torrent.dualAudio &&
-          files.length > 0
+          files.length > 0 &&
+          (!episode || (files.length === 1 && episodeMatches(files[0]?.name ?? "", episode)))
         );
       })
       .map(torrent => {

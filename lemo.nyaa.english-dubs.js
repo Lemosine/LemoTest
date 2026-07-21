@@ -115,7 +115,8 @@ function parseRss(xml, query) {
       const hash = nyaaTag(item, "infoHash").toLowerCase();
       if (!title || !hash || !AUDIO_RE.test(title)) return null;
       if (!seasonMatches(title, expectedSeason)) return null;
-      if (query.episode && !episodeMatches(title, query.episode) && !rangeContainsEpisode(title, query.episode)) return null;
+      if (query.episode && !acceptableEpisodeResult(title, query.episode)) return null;
+      const exactEpisode = query.episode && episodeMatches(title, query.episode);
 
       const seeders = Number.parseInt(nyaaTag(item, "seeders") || "0", 10);
       const leechers = Number.parseInt(nyaaTag(item, "leechers") || "0", 10);
@@ -131,7 +132,7 @@ function parseRss(xml, query) {
         downloads,
         size: parseSize(nyaaTag(item, "size")),
         date: pubDate ? new Date(pubDate) : new Date(0),
-        accuracy: query.episode ? episodeMatches(title, query.episode) ? "high" : "medium" : "medium",
+        accuracy: query.episode ? exactEpisode ? "high" : "medium" : "medium",
         type: isBatchTitle(title) ? "batch" : undefined
       };
     })
@@ -153,16 +154,35 @@ function rangeContainsEpisode(title, episode) {
   const ep = Number.parseInt(episode, 10);
   if (!Number.isFinite(ep)) return false;
 
+  return Boolean(rangeForEpisode(title, ep));
+}
+
+function rangeForEpisode(title, episode) {
+  const ep = Number.parseInt(episode, 10);
+  if (!Number.isFinite(ep)) return null;
+
   const ranges = [
     ...title.matchAll(/\bS\d{1,2}E(\d{1,4})\s*[-~]\s*E?(\d{1,4})\b/gi),
     ...title.matchAll(/\b(\d{1,4})\s*[-~]\s*(\d{1,4})\b/g)
   ];
 
-  return ranges.some(match => {
+  for (const match of ranges) {
     const start = Number.parseInt(match[1], 10);
     const end = Number.parseInt(match[2], 10);
-    return Number.isFinite(start) && Number.isFinite(end) && ep >= Math.min(start, end) && ep <= Math.max(start, end);
-  });
+    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+
+    const low = Math.min(start, end);
+    const high = Math.max(start, end);
+    if (ep >= low && ep <= high) return { start: low, end: high, span: high - low + 1 };
+  }
+
+  return null;
+}
+
+function acceptableEpisodeResult(title, episode) {
+  if (!episode) return true;
+  if (rangeForEpisode(title, episode)) return false;
+  return episodeMatches(title, episode);
 }
 
 function isBatchTitle(title) {
