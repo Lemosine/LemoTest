@@ -261,7 +261,8 @@ async function search(query, suffixes, isBatch = false) {
   const episode = numbering.episode == null ? null : String(numbering.episode).padStart(2, "0");
   const season = numbering.season;
   const normalizedQuery = { ...query, episode: numbering.episode, expectedSeason: season };
-  const absolute = season && episode ? `S${String(season).padStart(2, "0")}E${episode}` : null;
+  const absoluteSeason = season ?? 1;
+  const absolute = episode ? `S${String(absoluteSeason).padStart(2, "0")}E${episode}` : null;
   const searches = [];
 
   for (const title of titles) {
@@ -305,14 +306,14 @@ export default {
   },
 
   async single(query) {
-    return search(query, ["Dubbed", "Dual Audio"]);
+    return search(query, ["English Dub", "Dubbed", "Dual Audio"]);
   },
 
   async batch(query) {
-    return search(query, ["Dubbed", "Dual Audio"], true);
+    return search(query, ["English Dub", "Dubbed", "Dual Audio"], true);
   },
 
   async movie(query) {
-    return search(query, ["Dubbed", "Dual Audio"]);
+    return search(query, ["English Dub", "Dubbed", "Dual Audio"]);
   }
 };
