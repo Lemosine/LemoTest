@@ -2,14 +2,36 @@ const QUALITIES = ["1080", "720", "540", "480"];
 const AUDIO_RE = /\b(dubbed|dual[-\s._]?audio|dual|english[-\s._]?(?:dub|audio)|eng[-\s._]?(?:dub|audio)|multi[-\s._]?audio)\b/i;
 
 function episodeMatches(title, episode) {
-  const ep = String(episode);
-  const ep2 = ep.padStart(2, "0");
-  const ep3 = ep.padStart(3, "0");
-  return [
-    new RegExp(`(^|[^\\d])${ep2}([^\\d]|$)`),
-    new RegExp(`(^|[^\\d])${ep3}([^\\d]|$)`),
-    new RegExp(`e${ep2}([^\\d]|$)`, "i")
-  ].some(pattern => pattern.test(title));
+  const target = Number.parseInt(episode, 10);
+  if (!Number.isFinite(target)) return false;
+
+  const text = String(title);
+  const explicitEpisodes = [
+    ...text.matchAll(/\bS\d{1,2}\s*E\s*(\d{1,4})(?!\d)/gi),
+    ...text.matchAll(/\b(?:E|EP|EPS|Episode)\s*\.?\s*(\d{1,4})(?!\d)/gi)
+  ];
+
+  if (explicitEpisodes.length) {
+    return explicitEpisodes.some(match => Number.parseInt(match[1], 10) === target);
+  }
+
+  for (const match of text.matchAll(/\d{1,4}/g)) {
+    const value = match[0];
+    const parsed = Number.parseInt(value, 10);
+    if (parsed !== target) continue;
+
+    const index = match.index ?? 0;
+    const before = text[index - 1] ?? "";
+    const suffix = text.slice(index + value.length);
+    const after = suffix[0] ?? "";
+
+    if (value.length === 4 && parsed >= 1900 && parsed <= 2099) continue;
+    if (/[A-Za-z]/.test(before)) continue;
+    if (/[A-Za-z]/.test(after) && !/^v\d/i.test(suffix)) continue;
+    return true;
+  }
+
+  return false;
 }
 
 function rangeForEpisode(title, episode) {
