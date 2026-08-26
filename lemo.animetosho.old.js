@@ -1,5 +1,6 @@
 const QUALITIES = ["1080", "720", "540", "480"];
 const AUDIO_RE = /\b(dubbed|dual[-\s._]?audio|dual|english[-\s._]?(?:dub|audio)|eng[-\s._]?(?:dub|audio)|multi[-\s._]?audio)\b/i;
+const MAX_SAFE_BATCH_EPISODES = 36;
 
 function episodeMatches(title, episode) {
   const target = Number.parseInt(episode, 10);
@@ -39,18 +40,21 @@ function rangeForEpisode(title, episode) {
   if (!Number.isFinite(ep)) return null;
 
   const ranges = [
-    ...title.matchAll(/\bS\d{1,2}E(\d{1,4})\s*[-~]\s*E?(\d{1,4})\b/gi),
-    ...title.matchAll(/\b(\d{1,4})\s*[-~]\s*(\d{1,4})\b/g)
+    ...title.matchAll(/\bS\d{1,2}E(\d{1,4})\s*[-~\u2013\u2014]\s*E?(\d{1,4})\b/gi),
+    ...title.matchAll(/\b(?:E|EP|EPS|Episodes?)?\s*(\d{1,4})\s*[-~\u2013\u2014]\s*(?:E|EP|EPS|Episodes?)?\s*(\d{1,4})\b/gi)
   ];
 
   for (const match of ranges) {
     const start = Number.parseInt(match[1], 10);
     const end = Number.parseInt(match[2], 10);
     if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+    if (start >= 1900 && end >= 1900) continue;
 
     const low = Math.min(start, end);
     const high = Math.max(start, end);
-    if (ep >= low && ep <= high) return { start: low, end: high, span: high - low + 1 };
+    const span = high - low + 1;
+    if (span < 2) continue;
+    if (ep >= low && ep <= high) return { start: low, end: high, span };
   }
 
   return null;
@@ -58,7 +62,8 @@ function rangeForEpisode(title, episode) {
 
 function acceptableEpisodeResult(title, episode) {
   if (!episode) return true;
-  if (rangeForEpisode(title, episode)) return false;
+  const range = rangeForEpisode(title, episode);
+  if (range) return range.span <= MAX_SAFE_BATCH_EPISODES;
   return episodeMatches(title, episode);
 }
 
