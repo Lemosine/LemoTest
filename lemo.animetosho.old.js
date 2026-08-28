@@ -1,0 +1,142 @@
+const QUALITIES = ["1080", "720", "540", "480"];
+const AUDIO_RE = /\b(dubbed|dual[-\s._]?audio|dual|english[-\s._]?(?:dub|audio)|eng[-\s._]?(?:dub|audio)|multi[-\s._]?audio)\b/i;
+const MAX_SAFE_BATCH_EPISODES = 36;
+
+function episodeMatches(title, episode) {
+  const target = Number.parseInt(episode, 10);
+  if (!Number.isFinite(target)) return false;
+
+  const text = String(title);
+  const explicitEpisodes = [
+    ...text.matchAll(/\bS\d{1,2}\s*E\s*(\d{1,4})(?!\d)/gi),
+    ...text.matchAll(/\b(?:E|EP|EPS|Episode)\s*\.?\s*(\d{1,4})(?!\d)/gi)
+  ];
+
+  if (explicitEpisodes.length) {
+    return explicitEpisodes.some(match => Number.parseInt(match[1], 10) === target);
+  }
+
+  for (const match of text.matchAll(/\d{1,4}/g)) {
+    const value = match[0];
+    const parsed = Number.parseInt(value, 10);
+    if (parsed !== target) continue;
+
+    const index = match.index ?? 0;
+    const before = text[index - 1] ?? "";
+    const suffix = text.slice(index + value.length);
+    const after = suffix[0] ?? "";
+
+    if (value.length === 4 && parsed >= 1900 && parsed <= 2099) continue;
+    if (/[A-Za-z]/.test(before)) continue;
+    if (/[A-Za-z]/.test(after) && !/^v\d/i.test(suffix)) continue;
+    return true;
+  }
+
+  return false;
+}
+
+function rangeForEpisode(title, episode) {
+  const ep = Number.parseInt(episode, 10);
+  if (!Number.isFinite(ep)) return null;
+
+  const ranges = [
+    ...title.matchAll(/\bS\d{1,2}E(\d{1,4})\s*[-~\u2013\u2014]\s*E?(\d{1,4})\b/gi),
+    ...title.matchAll(/\b(?:E|EP|EPS|Episodes?)?\s*(\d{1,4})\s*[-~\u2013\u2014]\s*(?:E|EP|EPS|Episodes?)?\s*(\d{1,4})\b/gi)
+  ];
+
+  for (const match of ranges) {
+    const start = Number.parseInt(match[1], 10);
+    const end = Number.parseInt(match[2], 10);
+    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+    if (start >= 1900 && end >= 1900) continue;
+
+    const low = Math.min(start, end);
+    const high = Math.max(start, end);
+    const span = high - low + 1;
+    if (span < 2) continue;
+    if (ep >= low && ep <= high) return { start: low, end: high, span };
+  }
+
+  return null;
+}
+
+function acceptableEpisodeResult(title, episode) {
+  if (!episode) return true;
+  const range = rangeForEpisode(title, episode);
+  if (range) return range.span <= MAX_SAFE_BATCH_EPISODES;
+  return episodeMatches(title, episode);
+}
+
+export default new class Tosho {
+  url = atob("aHR0cHM6Ly9mZWVkLmFuaW1ldG9zaG8ub3JnL2pzb24=");
+
+  _buildQuery({ resolution, exclusions = [] }) {
+    const excluded = Array.isArray(exclusions) ? exclusions : [];
+    if (!excluded.length && !resolution) return "";
+
+    const parts = [];
+    if (excluded.length) parts.push(`!("${excluded.join('"|"')}")`);
+    if (resolution) parts.push(`!(*${QUALITIES.filter(quality => quality !== resolution).join("*|*")}*)`);
+
+    return parts.length ? `&qx=1&q=${parts.join("")}` : "";
+  }
+
+  map(entries, batch = false, useTorrent = false) {
+    return entries
+      .filter(entry => AUDIO_RE.test(entry.title || entry.torrent_name || ""))
+      .map(entry => ({
+        title: entry.title || entry.torrent_name,
+        link: useTorrent ? entry.torrent_url : entry.magnet_uri,
+        seeders: (entry.seeders || 0) >= 3e4 ? 0 : entry.seeders || 0,
+        leechers: (entry.leechers || 0) >= 3e4 ? 0 : entry.leechers || 0,
+        downloads: entry.torrent_downloaded_count || 0,
+        hash: entry.info_hash,
+        size: entry.total_size,
+        accuracy: entry.anidb_fid && !batch ? "high" : "medium",
+        type: batch ? "batch" : undefined,
+        date: new Date(1e3 * entry.timestamp)
+      }));
+  }
+
+  async single({ anidbEid, resolution, exclusions = [], fetch: request = fetch }, options) {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return [];
+    if (!anidbEid) return [];
+
+    const query = this._buildQuery({ resolution, exclusions });
+    const res = await request(this.url + "?eid=" + anidbEid + query);
+    const data = await res.json();
+    return data.length ? this.map(data, false, options?.useTorrent) : [];
+  }
+
+  async batch({ anidbAid, resolution, exclusions = [], episode, fetch: request = fetch }, options) {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return [];
+    if (!anidbAid) return [];
+
+    const query = this._buildQuery({ resolution, exclusions });
+    const res = await request(this.url + "?order=size-d&aid=" + anidbAid + query);
+    const data = (await res.json()).filter(entry => (
+      entry.num_files >= Math.min(24, Math.max(2, episode ?? 1)) &&
+      acceptableEpisodeResult(entry.title || entry.torrent_name || "", episode)
+    ));
+    return data.length ? this.map(data, true, options?.useTorrent) : [];
+  }
+
+  async movie({ anidbAid, resolution, exclusions = [], fetch: request = fetch }, options) {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return [];
+    if (!anidbAid) return [];
+
+    const query = this._buildQuery({ resolution, exclusions });
+    const res = await request(this.url + "?aid=" + anidbAid + query);
+    const data = await res.json();
+    return data.length ? this.map(data, false, options?.useTorrent) : [];
+  }
+
+  async test() {
+    try {
+      if (!(await fetch(this.url)).ok) throw new Error(`Failed to load data from ${this.url}! Is the site down?`);
+      return true;
+    } catch {
+      throw new Error(`Could not reach ${this.url}! Does the site work in your region?`);
+    }
+  }
+}();

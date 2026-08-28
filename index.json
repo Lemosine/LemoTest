@@ -1,15 +1,74 @@
 [
   {
     "manifestVersion": 2,
-    "id": "hayase.extension.lemuel.seadex.dubs",
-    "name": "Seadex Dubs",
-    "version": "1.0.4",
+    "id": "hayase.extension.lemosine.seadex.english-dubs",
+    "name": "Lemo Dub SeaDex",
+    "version": "1.0.17",
+    "description": "English-audio torrent results from SeaDex/Releases.moe.",
     "type": "torrent",
     "accuracy": "high",
     "ratio": 0,
     "media": "dub",
     "languages": ["US"],
-    "update": "https://raw.githubusercontent.com/Lemosine/LemoTest/main/index.json",
-    "code": "https://raw.githubusercontent.com/Lemosine/LemoTest/main/lemo.nyaa.dub.js"
+    "icon": "https://webtorrent.io/img/webtorrent-small.png",
+    "update": "https://raw.githubusercontent.com/Lemosine/Lemodubs/fix/hayase-extension-config/index.json",
+    "code": "https://raw.githubusercontent.com/Lemosine/Lemodubs/fix/hayase-extension-config/lemo.nyaa.dub.js?v=1.0.17"
+  },
+  {
+    "manifestVersion": 2,
+    "id": "hayase.extension.lemosine.nyaa.english-dubs",
+    "name": "Lemo Dub Nyaa",
+    "version": "1.0.12",
+    "description": "English-audio anime torrents from Nyaa.si.",
+    "type": "torrent",
+    "accuracy": "low",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "dub",
+    "languages": ["US"],
+    "url": "aHR0cHM6Ly9ueWFhLnNp",
+    "icon": "https://nyaa.si/static/favicon.png",
+    "update": "https://raw.githubusercontent.com/Lemosine/Lemodubs/fix/hayase-extension-config/index.json",
+    "code": "https://raw.githubusercontent.com/Lemosine/Lemodubs/fix/hayase-extension-config/lemo.nyaa.english-dubs.js?v=1.0.12"
+  },
+  {
+    "manifestVersion": 2,
+    "id": "hayase.extension.lemosine.nekobt.english-dubs",
+    "name": "Lemo Dub NekoBT",
+    "version": "0.0.13",
+    "description": "English-audio torrent results from NekoBT.",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "dub",
+    "updatePeers": false,
+    "languages": ["US"],
+    "url": "aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==",
+    "icon": "https://nekobt.to/cdn/pfp/null/64",
+    "update": "https://raw.githubusercontent.com/Lemosine/Lemodubs/fix/hayase-extension-config/index.json",
+    "code": "https://raw.githubusercontent.com/Lemosine/Lemodubs/fix/hayase-extension-config/lemo.nekobt.dubs.js?v=0.0.13"
+  },
+  {
+    "manifestVersion": 2,
+    "id": "hayase.extension.lemosine.animetosho.old",
+    "name": "Lemo Dub AnimeTosho",
+    "version": "0.1.11",
+    "description": "English-audio AnimeTosho torrent results by AniDB episode or anime id.",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "dub",
+    "languages": ["US"],
+    "url": "aHR0cHM6Ly9mZWVkLmFuaW1ldG9zaG8ub3JnL2pzb24=",
+    "icon": "https://animetosho.org/inc/favicon.ico",
+    "update": "https://raw.githubusercontent.com/Lemosine/Lemodubs/fix/hayase-extension-config/index.json",
+    "code": "https://raw.githubusercontent.com/Lemosine/Lemodubs/fix/hayase-extension-config/lemo.animetosho.old.js?v=0.1.11",
+    "options": {
+      "useTorrent": {
+        "type": "boolean",
+        "description": "Use .torrent files instead of magnet links.",
+        "default": false
+      }
+    }
   }
 ]
